@@ -19,29 +19,21 @@
 
 function trackViewedProduct() {
     var klaviyo = window.klaviyo || [];
-    var viewed_item = {
-    'Title': item.title,
-    'ItemId': parseInt(item.product_id),
-    'ProductID': parseInt(item.product_id),
-    'variantId': parseInt(item.variant_id),
-    'Categories': item.categories,
-    'ImageUrl': item.image_url,
-    'Url': item.url,
-    'Metadata': {
-        'Price': parseFloat(item.price),
-    }
-};
-
     var track_viewed_item = {
-    'Title': item.title,
-    'ItemId': parseInt(item.product_id),
-    'variantId': parseInt(item.variant_id),
-    'Categories': item.categories,
-    'ImageUrl': item.image_url,
-    'Url': item.url,
-    'Metadata': {
-        'Price': parseFloat(item.price),
+        'Title': item.title,
+        'ItemId': parseInt(item.product_id),
+        'variantId': parseInt(item.variant_id),
+        'Categories': item.categories,
+        'ImageUrl': item.image_url,
+        'Url': item.url,
+        '$value': parseFloat(item.price),
+        'Metadata': {
+            'Price': parseFloat(item.price),
         }
+    };
+    var viewed_item = {
+        ...track_viewed_item,
+        'ProductID': parseInt(item.product_id),
     };
 
     klaviyo.push(['track', 'Viewed Product', viewed_item]);
