@@ -16,12 +16,8 @@
 
 require __DIR__ . '/blocks/StoreApi.php';
 
-add_action(
-	'woocommerce_klaviyo_loaded',
-	function () {
-		new WCK\Blocks\StoreApi();
-	}
-);
+new WCK\Blocks\StoreApi();
+
 add_action(
 	'init',
 	function () {

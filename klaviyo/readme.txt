@@ -2,8 +2,8 @@
 Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
 Requires at least: 4.4
-Tested up to: 6.5
-Stable tag: 3.4.1
+Tested up to: 6.7
+Stable tag: 3.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,9 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.4.2 2024-11-11 =
+* Fixed - Tweak order of checkout block hooks for better compatibility.
+
 = 3.4.1 2024-10-07 =
 * Changed - Add price info at top level for Viewed Product events.
 * Fixed - Load Klaviyo core functions after WooCommerce plugin is initialized.

@@ -54,7 +54,7 @@ class StoreApi {
 			// Triggers an API call to Klaviyo.
 			add_action( 'klaviyo_schedule_consent_event', array( $this, 'send_consent_event' ), 10, 5 );
 			// Register Store API schema and validation.
-			add_action( 'init', array( $this, 'register_store_api_routes' ) );
+			$this->register_store_api_routes();
 		}
 	}
 
