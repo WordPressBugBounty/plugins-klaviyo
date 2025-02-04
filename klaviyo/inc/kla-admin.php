@@ -277,7 +277,7 @@ return $plugin_details['Name'];
 
                         <section style="margin:20px 0px 20px">
                             <label style="display:block;margin:10px 0px" for="klaviyo_sms_consent_disclosure_text"><b>SMS consent disclosure text</b></label>
-                            <textarea rows="10" cols="20" class="regular-text" name="klaviyo_sms_consent_disclosure_text" placeholder="' . self::SMS_DISCLOSURE_TEXT . '" >' . WCK()->options->get_klaviyo_option( 'klaviyo_sms_disclosure_text', null ) . '</textarea>
+                            <textarea rows="10" cols="20" class="regular-text" name="klaviyo_sms_consent_disclosure_text" placeholder="' . self::SMS_DISCLOSURE_TEXT . '" >' . WCK()->options->get_klaviyo_option( 'klaviyo_sms_consent_disclosure_text', null ) . '</textarea>
 
                             <p style="margin:2px"><small>You must include disclosure language for TCPA compliance. You should also update your Terms of Service and Privacy Policy to include the terms of your SMS marketing program</small></p>
                             <p><a href="https://help.klaviyo.com/hc/en-us/articles/360035055312-About-US-SMS-Compliance-Laws">Learn more about SMS consent and compliance</a></p>

@@ -76,7 +76,7 @@ class WCK_Options {
 			$option_value = apply_filters( 'wck_option_' . $option, self::DEPRECATED_SETTINGS[ $option ] );
 		}
 
-		return htmlspecialchars( $option_value );
+		return htmlspecialchars( $option_value, $flags = ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
 	}
 
 	/**

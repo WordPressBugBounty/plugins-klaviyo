@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCK_API {
 
-	const VERSION                    = '3.4.2';
+	const VERSION                    = '3.4.3';
 	const KLAVIYO_BASE_URL           = 'klaviyo/v1';
 	const ORDERS_ENDPOINT            = 'orders';
 	const EXTENSION_VERSION_ENDPOINT = 'version';
@@ -293,8 +293,8 @@ function kl_build_date_modified_arg_value( WP_REST_Request $request ) {
 	$date_modified_before = $request->get_param( 'date_modified_before' );
 
 	// strtotime() returns false if it cannot parse datetime string.
-	$after_ts  = strtotime( $date_modified_after );
-	$before_ts = strtotime( $date_modified_before );
+	$after_ts  = strtotime( $date_modified_after ?? '' );
+	$before_ts = strtotime( $date_modified_before ?? '' );
 
 	if ( $after_ts && $before_ts ) {
 		return "{$after_ts}...{$before_ts}";
