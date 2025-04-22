@@ -2,8 +2,8 @@
 Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
 Requires at least: 4.4
-Tested up to: 6.7
-Stable tag: 3.4.3
+Tested up to: 6.8
+Stable tag: 3.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,9 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.5.0 2025-04-22 =
+* Changed - Update Klaviyo backend API revision to 2025-04-15
+
 = 3.4.3 2025-02-03 =
 * Changed - Explicitly pass default value of  param to htmlspecialchars() for cross-version compatibility.
 * Changed - Update WooCommerce <> Klaviyo logo asset.

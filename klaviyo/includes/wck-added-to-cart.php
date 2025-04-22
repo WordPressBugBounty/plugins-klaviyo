@@ -41,7 +41,7 @@ function kl_added_to_cart_options( $payload ) {
 		'headers'  => array(
 			'Content-Type' => 'application/json',
 			'X-Klaviyo-User-Agent' => kl_get_plugin_usage_meta_data(),
-			'revision' => '2023-08-15',
+			'revision' => kl_get_klaviyo_api_revision(),
 		),
 		'body'     => wp_json_encode( $payload ),
 	);

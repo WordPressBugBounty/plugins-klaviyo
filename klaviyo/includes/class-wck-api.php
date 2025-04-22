@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCK_API {
 
-	const VERSION                    = '3.4.3';
+	const VERSION                    = '3.5.0';
 	const KLAVIYO_BASE_URL           = 'klaviyo/v1';
 	const ORDERS_ENDPOINT            = 'orders';
 	const EXTENSION_VERSION_ENDPOINT = 'version';
@@ -630,4 +630,8 @@ function kl_get_plugin_usage_meta_data() {
 	$php_version            = PHP_VERSION;
 	$klaviyo_plugin_version = WCK_API::VERSION;
 	return "woocommerce-klaviyo/$klaviyo_plugin_version wordpress/$wp_version php/$php_version $woocommerce_version";
+}
+
+function kl_get_klaviyo_api_revision() {
+	return '2025-04-15';
 }

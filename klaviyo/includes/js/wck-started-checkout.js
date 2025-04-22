@@ -21,6 +21,10 @@
  * Attach event listeners to save billing fields.
  */
 
+// Constants for the klaviyo api url prefix and revision
+const KLAVIYO_API_URL_PREFIX = 'https://a.klaviyo.com/';
+const KLAVIYO_API_REVISION = '2025-04-15';
+
 var identify_object = {
   'company_id': public_key.token,
   'properties': {}
@@ -29,10 +33,32 @@ var identify_object = {
 var klaviyo_cookie_id = '__kla_id';
 
 function buildProfileRequestPayload(event_attributes) {
+  const topLevelAttributes = ['email', 'first_name', 'last_name'];
+
+  // Destructure event_attributes:
+  // - properties: gets the properties object from event_attributes, defaulting to empty object if not present
+  // - restAttributes: gets all other fields from event_attributes using the rest operator (...)
+  const { properties = {}, ...restAttributes } = event_attributes || {};
+
+  // Create a new object for the filtered properties to avoid mutating the original input
+  const filteredProperties = { ...properties };
+  const dataAttributes = { ...restAttributes };
+
+  // Move top level attributes from properties to data level
+  topLevelAttributes.forEach(field => {
+    if (filteredProperties[field] !== undefined) {
+      dataAttributes[field] = filteredProperties[field];
+      delete filteredProperties[field];
+    }
+  });
+
+  // Add the filtered properties back to dataAttributes
+  dataAttributes.properties = filteredProperties;
+
   return JSON.stringify({
     data: {
       type: "profile",
-      attributes: event_attributes
+      attributes: dataAttributes
     }
   })
 }
@@ -68,12 +94,12 @@ function buildEventRequestPayload(customer_properties, event_properties, metric_
 
 function makePublicAPIcall(endpoint, event_data) {
   var company_id = public_key.token;
-  jQuery.ajax('https://a.klaviyo.com/' + endpoint + '?company_id=' + company_id, {
+  jQuery.ajax(KLAVIYO_API_URL_PREFIX + endpoint + '?company_id=' + company_id, {
     type: "POST",
     contentType: "application/json",
     data: event_data,
     headers: {
-      'revision': '2023-08-15',
+      'revision': KLAVIYO_API_REVISION,
       'X-Klaviyo-User-Agent': plugin_meta_data.data,
     }
   });
