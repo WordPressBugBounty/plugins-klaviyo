@@ -1,9 +1,9 @@
 === Klaviyo ===
 Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
-Requires at least: 4.4
+Requires at least: 5.2
 Tested up to: 6.8
-Stable tag: 3.5.0
+Stable tag: 3.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,11 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.6.0 2025-06-02 =
+* Added - Added admin notices to /plugins view on wordpress dashboard to prompt reviews after 60 days
+* Fixed - JSON param access of billing address during checkout consent processing.
+* Fixed - URI-encode checkout cookie.
+
 = 3.5.0 2025-04-22 =
 * Changed - Update Klaviyo backend API revision to 2025-04-15
 

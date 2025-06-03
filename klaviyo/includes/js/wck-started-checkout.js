@@ -105,9 +105,9 @@ function makePublicAPIcall(endpoint, event_data) {
   });
 }
 
-function getKlaviyoCookie() {
+function decodeKlaviyoCookieData(cookie) {
   var name = klaviyo_cookie_id + "=";
-  var decodedCookie = decodeURIComponent(document.cookie);
+  var decodedCookie = decodeURIComponent(cookie);
   var ca = decodedCookie.split(';');
   for (var i = 0; i < ca.length; i++) {
     var c = ca[i];
@@ -115,14 +115,22 @@ function getKlaviyoCookie() {
       c = c.substring(1);
     }
     if (c.indexOf(name) == 0) {
-      return atob(c.substring(name.length, c.length));
+      return decodeURIComponent(atob(c.substring(name.length, c.length)));
     }
   }
   return "";
 }
 
+function getKlaviyoCookie() {
+  return decodeKlaviyoCookieData(document.cookie);
+}
+
+function encodeKlaviyoCookieData(cookie_data) {
+  return btoa(encodeURIComponent(JSON.stringify(cookie_data)));
+}
+
 function setKlaviyoCookie(cookie_data) {
-  cvalue = btoa(JSON.stringify(cookie_data));
+  cvalue = encodeKlaviyoCookieData(cookie_data);
   var date = new Date();
   date.setTime(date.getTime() + (63072e6)); // adding 2 years in milliseconds to current time
   var expires = "expires=" + date.toUTCString();

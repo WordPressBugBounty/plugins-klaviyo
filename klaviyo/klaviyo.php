@@ -3,10 +3,10 @@
  * Plugin Name: Klaviyo
  * Plugin URI: https://wordpress.org/plugins/klaviyo/
  * Description: A plugin to automatically sync your WooCommerce sales, products and customers with Klaviyo. With Klaviyo you can set up abandoned cart emails, collect emails for your newsletter to grow your business.
- * Version: 3.5.0
+ * Version: 3.6.0
  * Author: Klaviyo, Inc.
  * Author URI: https://www.klaviyo.com
- * Requires at least: 4.4
+ * Requires at least: 5.2
  * Requires PHP: 7.0
  * WC requires at least: 2.0
  * WC tested up to: 5.5.2
@@ -56,7 +56,7 @@ if ( ! class_exists( 'WooCommerceKlaviyo' ) ) :
 		 *
 		 * @var string
 		 */
-		public static $version = '3.5.0';
+		public static $version = '3.6.0';
 
 		/**
 		 * Instance of the class.
@@ -383,4 +383,149 @@ if ( is_plugin_inactive( 'wordpress-klaviyo-master/klaviyo.php' ) ) {
 
 	// Handle deactivation.
 	register_deactivation_hook( __FILE__, array( WCK()->installer, 'cleanup_klaviyo' ) );
+}
+
+// Tracks activation time
+register_activation_hook(__FILE__, 'klaviyo_activation_hook');
+
+function klaviyo_activation_hook() {
+		update_option('klaviyo_activation_time', time());
+}
+
+add_action('plugin_loaded', 'klaviyo_check_for_upgrade');
+
+// Check if the plugin version has changed since the last activation.
+function klaviyo_check_for_upgrade() {
+	$current_version = WCK()->get_version();
+	$saved_version   = get_option('woocommerce_klaviyo_version');
+	$form_dismissed  = get_option('klaviyo_review_dismissed');
+
+	if ($saved_version !== $current_version) {
+		update_option('klaviyo_activation_time', time());
+		update_option('woocommerce_klaviyo_version', $current_version);
+		delete_option('klaviyo_feedback_response');
+		delete_option('klaviyo_review_dismissed');
+	}
+}
+
+add_action('wp_ajax_klaviyo_handle_feedback_response', 'klaviyo_handle_feedback_response');
+
+// Handler for feedback/review
+function klaviyo_handle_feedback_response() {
+
+	if (!current_user_can('manage_options')) {
+		wp_die();
+	}
+
+	$nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+	if (!wp_verify_nonce($nonce, 'klaviyo_feedback_nonce')) {
+		wp_die(esc_html__('Security check failed', 'woocommerce-klaviyo'));
+	}
+
+	if (isset($_POST['response']) && in_array($_POST['response'], array( 'great', 'feedback' ))) {
+		update_option('klaviyo_feedback_response', sanitize_text_field($_POST['response']));
+	}
+
+	wp_die();
+}
+
+add_action('wp_ajax_klaviyo_dismiss_review_prompt', 'klaviyo_dismiss_review_prompt');
+
+function klaviyo_dismiss_review_prompt() {
+	update_option('klaviyo_review_dismissed', true);
+	wp_die();
+}
+
+add_action('admin_notices', 'klaviyo_review_prompt_notice');
+
+function klaviyo_review_prompt_notice() {
+	// Check if:
+	// the plugin has been activated for at least 60 days
+	// the user has the capability to manage options
+	// the review prompt has not been dismissed
+	if (!current_user_can('manage_options')) {
+		return;
+	}
+
+	if (get_current_screen()->base !== 'plugins') {
+		return;
+	}
+
+	$activation_time = get_option('klaviyo_activation_time');
+
+	if (!$activation_time || ( time() - $activation_time ) < 60 * DAY_IN_SECONDS) {
+		return;
+	}
+
+	if (get_option('klaviyo_review_dismissed')) {
+		return;
+	}
+
+	$response = get_option('klaviyo_feedback_response');
+
+	// Generate the nonce for the JS
+	$nonce = wp_create_nonce('klaviyo_feedback_nonce');
+
+	// FOLLOW-UP: Great
+	if ('great' === $response) {
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>We're happy to hear you're enjoying Klaviyo! If you have a moment, please consider <a href="#" id="klaviyo-leave-review">leaving us a review</a>.</p>
+		</div>
+		<script type="text/javascript">
+			jQuery(document).on('click', '#klaviyo-leave-review', function(e) {
+				e.preventDefault();
+				jQuery.post(ajaxurl, { action: 'klaviyo_dismiss_review_prompt' }, function () {
+					window.open('https://woocommerce.com/products/klaviyo-for-woocommerce/?review', '_blank');
+					location.reload();
+				});
+			});
+		</script>
+		<?php
+		return;
+	}
+
+	// FOLLOW-UP: Feedback
+	if ('feedback' === $response) {
+		?>
+		<div class="notice notice-info is-dismissible">
+			<p>We'd love to hear your feedback. Please <a href="#" id="klaviyo-leave-feedback">get in touch with support</a>.</p>
+		</div>
+		<script type="text/javascript">
+			jQuery(document).on('click', '#klaviyo-leave-feedback', function(e) {
+				e.preventDefault();
+				jQuery.post(ajaxurl, { action: 'klaviyo_dismiss_review_prompt' }, function () {
+					window.open('https://www.klaviyo.com/support', '_blank');
+					location.reload();
+				});
+			});
+		</script>
+		<?php
+		return;
+	}
+
+	// INITIAL PROMPT
+	?>
+	<div class="notice notice-info is-dismissible klaviyo-review-notice">
+		<p><strong>How would you rate your experience with Klaviyo for WooCommerce?</strong></p>
+		<p>
+			<button class="button-primary klaviyo-feedback-button" data-response="great">Great!</button>
+			<button class="button klaviyo-feedback-button" data-response="feedback">I have feedback</button>
+		</p>
+	</div>
+	<script type="text/javascript">
+		jQuery(document).on('click', '.klaviyo-feedback-button', function(e) {
+			e.preventDefault();
+			const response = jQuery(this).data('response');
+
+			jQuery.post(ajaxurl, {
+				action: 'klaviyo_handle_feedback_response',
+				response: response,
+				nonce: '<?php echo esc_js( $nonce ); ?>'
+			}, function () {
+				location.reload();
+			});
+		});
+	</script>
+	<?php
 }

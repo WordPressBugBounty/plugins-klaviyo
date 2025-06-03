@@ -121,7 +121,8 @@ class StoreApi {
 	 * @since 0.1.0
 	 */
 	public function optin_customer_from_store_api( $order, $request ) {
-		$billing_address = $request->billing_address;
+		$body            = $request->get_json_params();
+		$billing_address = $body['billing_address'];
 		$request_email   = $billing_address['email'] ?? null;
 		$request_phone   = $billing_address['phone'] ?? null;
 		$request_country = $billing_address['country'] ?? null;
