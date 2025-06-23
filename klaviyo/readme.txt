@@ -3,7 +3,7 @@ Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
 Requires at least: 5.2
 Tested up to: 6.8
-Stable tag: 3.6.0
+Stable tag: 3.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,11 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.7.0 2025-06-20 =
+* Added - Support for anonymous visitor activity backfill (AVAB) when enabled in Klaviyo account.
+* Changed - Updates API function names to avoid  potential conflicts.
+* Changed - Merge __kla_id cookie values during checkout.
+
 = 3.6.0 2025-06-02 =
 * Added - Added admin notices to /plugins view on wordpress dashboard to prompt reviews after 60 days
 * Fixed - JSON param access of billing address during checkout consent processing.

@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCK_API {
 
-	const VERSION                    = '3.6.0';
+	const VERSION                    = '3.7.0';
 	const KLAVIYO_BASE_URL           = 'klaviyo/v1';
 	const ORDERS_ENDPOINT            = 'orders';
 	const EXTENSION_VERSION_ENDPOINT = 'version';
@@ -109,7 +109,7 @@ class WCK_API {
  * @param WP_Query $loop The query object.
  * @return array
  */
-function count_loop( WP_Query $loop ) {
+function kl_count_loop( WP_Query $loop ) {
 	$loop_ids = array();
 	while ( $loop->have_posts() ) {
 		$loop->the_post();
@@ -125,11 +125,11 @@ function count_loop( WP_Query $loop ) {
  * @param WP_REST_Request $request Incoming request object.
  * @return array
  */
-function validate_request( $request ) {
+function kl_validate_request( $request ) {
 	$consumer_key    = $request->get_param( 'consumer_key' );
 	$consumer_secret = $request->get_param( 'consumer_secret' );
 	if ( empty( $consumer_key ) || empty( $consumer_secret ) ) {
-		return validation_response(
+		return kl_validation_response(
 			true,
 			WCK_API::STATUS_CODE_BAD_REQUEST,
 			WCK_API::ERROR_KEYS_NOT_PASSED,
@@ -152,14 +152,14 @@ function validate_request( $request ) {
 	);
 
 	if ( $user->consumer_secret === $consumer_secret ) {
-		return validation_response(
+		return kl_validation_response(
 			false,
 			WCK_API::STATUS_CODE_HTTP_OK,
 			null,
 			true
 		);
 	}
-	return validation_response(
+	return kl_validation_response(
 		true,
 		WCK_API::STATUS_CODE_AUTHORIZATION_ERROR,
 		WCK_API::ERROR_CONSUMER_KEY_NOT_FOUND,
@@ -173,7 +173,7 @@ function validate_request( $request ) {
  * @param WP_REST_Request $request Incoming request object.
  * @return bool|WP_Error True if validation succeeds, otherwise WP_Error to be handled by rest server.
  */
-function validate_request_v2( WP_REST_Request $request ) {
+function kl_validate_request_v2( WP_REST_Request $request ) {
 	$consumer_key    = $request->get_param( 'consumer_key' );
 	$consumer_secret = $request->get_param( 'consumer_secret' );
 	if ( empty( $consumer_key ) || empty( $consumer_secret ) ) {
@@ -234,7 +234,7 @@ function validate_request_v2( WP_REST_Request $request ) {
  * @param boolean $success Whether validation was successful.
  * @return array
  */
-function validation_response( $error, $code, $reason, $success ) {
+function kl_validation_response( $error, $code, $reason, $success ) {
 	return array(
 		WCK_API::API_RESPONSE_ERROR   => $error,
 		WCK_API::API_RESPONSE_CODE    => $code,
@@ -250,7 +250,7 @@ function validation_response( $error, $code, $reason, $success ) {
  * @param string          $post_type WordPress post type.
  * @return array
  */
-function process_resource_args( $request, $post_type ) {
+function kl_process_resource_args( $request, $post_type ) {
 	$page_limit = $request->get_param( 'page_limit' );
 	if ( empty( $page_limit ) ) {
 		$page_limit = WCK_API::DEFAULT_RECORDS_PER_PAGE;
@@ -324,15 +324,15 @@ function kl_get_orders_count( WP_REST_Request $request ) {
  * @param WP_REST_Request $request Incoming request object.
  * @return array
  */
-function get_products_count( WP_REST_Request $request ) {
-	$validated_request = validate_request( $request );
+function kl_get_products_count( WP_REST_Request $request ) {
+	$validated_request = kl_validate_request( $request );
 	if ( true === $validated_request['error'] ) {
 		return $validated_request;
 	}
 
-	$args = process_resource_args( $request, 'product' );
+	$args = kl_process_resource_args( $request, 'product' );
 	$loop = new WP_Query( $args );
-	$data = count_loop( $loop );
+	$data = kl_count_loop( $loop );
 	return array( 'product_count' => $loop->found_posts );
 }
 
@@ -342,16 +342,16 @@ function get_products_count( WP_REST_Request $request ) {
  * @param WP_REST_Request $request Incoming request object.
  * @return array|array[]
  */
-function get_products( WP_REST_Request $request ) {
-	$validated_request = validate_request( $request );
+function kl_get_products( WP_REST_Request $request ) {
+	$validated_request = kl_validate_request( $request );
 	if ( true === $validated_request['error'] ) {
 		return $validated_request;
 	}
 
-	$args = process_resource_args( $request, 'product' );
+	$args = kl_process_resource_args( $request, 'product' );
 
 	$loop = new WP_Query( $args );
-	$data = count_loop( $loop );
+	$data = kl_count_loop( $loop );
 	return array( 'product_ids' => $data );
 }
 
@@ -414,7 +414,7 @@ function kl_get_orders( WP_REST_Request $request ) {
  *
  * @return array
  */
-function get_extension_version() {
+function kl_get_extension_version() {
 	return WCK_API::build_version_payload();
 }
 
@@ -424,7 +424,7 @@ function get_extension_version() {
  * @param WP_REST_Request $request Incoming request object.
  * @return bool|mixed|void|WP_Error
  */
-function update_options( WP_REST_Request $request ) {
+function kl_update_options( WP_REST_Request $request ) {
 	$body = json_decode( $request->get_body(), $assoc = true );
 	if ( ! $body ) {
 		return new WP_Error(
@@ -505,7 +505,7 @@ add_action(
 			WCK_API::EXTENSION_VERSION_ENDPOINT,
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => 'get_extension_version',
+				'callback'            => 'kl_get_extension_version',
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -515,7 +515,7 @@ add_action(
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'kl_get_orders_count',
-				'permission_callback' => 'validate_request_v2',
+				'permission_callback' => 'kl_validate_request_v2',
 			)
 		);
 		register_rest_route(
@@ -523,7 +523,7 @@ add_action(
 			'products/count',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => 'get_products_count',
+				'callback'            => 'kl_get_products_count',
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -538,7 +538,7 @@ add_action(
 						'validate_callback' => 'is_numeric',
 					),
 				),
-				'permission_callback' => 'validate_request_v2',
+				'permission_callback' => 'kl_validate_request_v2',
 			)
 		);
 		register_rest_route(
@@ -546,7 +546,7 @@ add_action(
 			WCK_API::PRODUCTS_ENDPOINT,
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => 'get_products',
+				'callback'            => 'kl_get_products',
 				'args'                => array(
 					'id' => array(
 						'validate_callback' => 'is_numeric',
@@ -561,13 +561,13 @@ add_action(
 			array(
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => 'update_options',
-					'permission_callback' => 'validate_request_v2',
+					'callback'            => 'kl_update_options',
+					'permission_callback' => 'kl_validate_request_v2',
 				),
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => 'get_klaviyo_options',
-					'permission_callback' => 'validate_request_v2',
+					'permission_callback' => 'kl_validate_request_v2',
 				),
 			)
 		);
@@ -578,7 +578,7 @@ add_action(
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => 'wck_disable_plugin',
-					'permission_callback' => 'validate_request_v2',
+					'permission_callback' => 'kl_validate_request_v2',
 				),
 			)
 		);

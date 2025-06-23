@@ -207,8 +207,13 @@ function load_started_checkout() {
 	$should_add_started_checkout = apply_filters( 'wck_should_add_started_checkout', is_checkout() );
 	if ( $should_add_started_checkout ) {
 		$token = WCK()->options->get_klaviyo_option( 'klaviyo_public_api_key' );
-
+		// Enqueue post identification sync module from klaviyo.js.
+		wp_enqueue_script( 'wck_anon_backfill', '//static.klaviyo.com/onsite/js/' . $token . '/klaviyo.js?module=POST_IDENTIFICATION_SYNC', null, WCK_API::VERSION, array( 'in_footer' => true ) );
+		// Load klaviyo object per https://developers.klaviyo.com/en/docs/introduction_to_the_klaviyo_object.
+		wp_add_inline_script('wck_anon_backfill', '!function(){if(!window.klaviyo){window._klOnsite=window._klOnsite||[];try{window.klaviyo=new Proxy({},{get:function(n,i){return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))}));return e}}})}catch(n){window.klaviyo=window.klaviyo||[],window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}}}}();');
+		// Enqueue started checkout javascript for legacy checkout page.
 		wp_enqueue_script( 'wck_started_checkout', plugins_url( '/js/wck-started-checkout.js', __FILE__ ), null, WCK_API::VERSION, true );
+		// Enqueue started checkout data.
 		wp_localize_script( 'wck_started_checkout', 'public_key', array( 'token' => $token ) );
 		wp_localize_script( 'wck_started_checkout', 'plugin_meta_data', array( 'data' => kl_get_plugin_usage_meta_data() ));
 		// Build started checkout event data and add inline script to html.

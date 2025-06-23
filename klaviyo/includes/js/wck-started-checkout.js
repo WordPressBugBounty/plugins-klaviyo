@@ -130,10 +130,28 @@ function encodeKlaviyoCookieData(cookie_data) {
 }
 
 function setKlaviyoCookie(cookie_data) {
-  cvalue = encodeKlaviyoCookieData(cookie_data);
-  var date = new Date();
+  // Get existing cookie data
+  const existingCookieData = getKlaviyoCookie();
+  let mergedData = {};
+
+  // If we have existing data, parse it and merge with new data
+  if (existingCookieData) {
+    try {
+      const parsedExistingData = typeof existingCookieData === 'string' ?
+        JSON.parse(existingCookieData) : existingCookieData;
+      mergedData = { ...parsedExistingData, ...cookie_data };
+    } catch (e) {
+      // If parsing fails, just use the new data
+      mergedData = cookie_data;
+    }
+  } else {
+    mergedData = cookie_data;
+  }
+
+  const cvalue = encodeKlaviyoCookieData(mergedData);
+  const date = new Date();
   date.setTime(date.getTime() + (63072e6)); // adding 2 years in milliseconds to current time
-  var expires = "expires=" + date.toUTCString();
+  const expires = "expires=" + date.toUTCString();
   document.cookie = klaviyo_cookie_id + "=" + cvalue + ";" + expires + "; path=/";
 }
 
@@ -203,7 +221,10 @@ window.addEventListener("load", function () {
     var customer_properties = {}
     if (kl_checkout.email) {
       customer_properties['email'] = kl_checkout.email;
+      // Identify user once we have an email. This will trigger AVAB if enabled.
+      klaviyo.identify(customer_properties);
     } else if (kl_checkout.exchange_id) {
+      // Klaviyo use is already identified if we have an exchange ID.
       customer_properties['_kx'] = kl_checkout.exchange_id;
     } else {
       return;
