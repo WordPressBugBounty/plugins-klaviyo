@@ -313,6 +313,7 @@ function kl_add_to_list() {
 			array(
 				'customer'     => array(
 					'email' => $email,
+					'country' => $country,
 					'phone' => $phone,
 				),
 				'consent'      => true,

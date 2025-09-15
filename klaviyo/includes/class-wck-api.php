@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCK_API {
 
-	const VERSION                    = '3.7.0';
+	const VERSION                    = '3.7.1';
 	const KLAVIYO_BASE_URL           = 'klaviyo/v1';
 	const ORDERS_ENDPOINT            = 'orders';
 	const EXTENSION_VERSION_ENDPOINT = 'version';
@@ -597,9 +597,6 @@ function klaviyo_check_for_plugin_update( $transient_value ) {
 	if ( WCK_API::is_most_recent_version( $transient_value ) || get_site_transient( 'is_klaviyo_plugin_outdated' ) ) {
 		return;
 	}
-
-	// Send options payload to Klaviyo.
-	WCK()->webhook_service->send_options_webhook();
 
 	// Set site transient so we don't keep making requests.
 	set_site_transient( 'is_klaviyo_plugin_outdated', 1 );

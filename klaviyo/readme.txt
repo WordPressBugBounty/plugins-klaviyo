@@ -3,7 +3,7 @@ Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
 Requires at least: 5.2
 Tested up to: 6.8
-Stable tag: 3.7.0
+Stable tag: 3.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,13 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.7.1 2025-09-11 =
+* Added - Include country code in email consent webhook.
+* Changed - Updates kl_checkout_item hook to include $values representing full cart item data.
+* Removed - Don't send version webhook to Klaviyo on update nor when plugin version goes out of date.
+* Fixed - Fix PHP warning for passing null value to strpos() in kla-admin.php
+* Fixed - PHP warning for undefined "billing_address" in StoreApi.php
+
 = 3.7.0 2025-06-20 =
 * Added - Support for anonymous visitor activity backfill (AVAB) when enabled in Klaviyo account.
 * Changed - Updates API function names to avoid  potential conflicts.

@@ -122,7 +122,7 @@ class StoreApi {
 	 */
 	public function optin_customer_from_store_api( $order, $request ) {
 		$body            = $request->get_json_params();
-		$billing_address = $body['billing_address'];
+		$billing_address = $body['billing_address'] ?? array();
 		$request_email   = $billing_address['email'] ?? null;
 		$request_phone   = $billing_address['phone'] ?? null;
 		$request_country = $billing_address['country'] ?? null;
@@ -131,8 +131,8 @@ class StoreApi {
 		$country         = $order->get_billing_country() ?? $request_country;
 
 		// Structure of extension data defined in schema_callback above.
-		$consent_to_sms        = $request['extensions']['klaviyo']['sms'];
-		$consent_to_newsletter = $request['extensions']['klaviyo']['newsletter'];
+		$consent_to_sms        = $request['extensions']['klaviyo']['sms'] ?? false;
+		$consent_to_newsletter = $request['extensions']['klaviyo']['newsletter'] ?? false;
 
 		if ( $consent_to_sms || $consent_to_newsletter ) {
 			as_enqueue_async_action( 'klaviyo_schedule_consent_event', array( $email, $phone, $country, $consent_to_sms, $consent_to_newsletter ), 'klaviyo' );

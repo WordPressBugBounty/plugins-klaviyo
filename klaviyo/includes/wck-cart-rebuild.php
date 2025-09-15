@@ -182,9 +182,9 @@ function wck_build_cart_data( $cart ) {
 		*
 		* The example below shows you how to add custom fields to the line items on the Started Checkout event
 		*
-		* add_filter('kl_checkout_item','kl_modify_checkout_item',1,2);
+		* add_filter('kl_checkout_item','kl_modify_checkout_item',1,3);
 		*
-		* function kl_modify_checkout_item($line_item, $product) {
+		* function kl_modify_checkout_item($line_item, $product, $values) {
 		*        $product_lead_time =  get_field('leadtime',$product->get_id());
 		*        $product_designer = get_field('designer', $product->get_id());
 		*        $line_item['LeadTime'] = $product_lead_time;
@@ -194,10 +194,11 @@ function wck_build_cart_data( $cart ) {
 		*
 		* @since 3.0.12
 		*
-		* @param array      $item The item in the cart
+		* @param array      $item The item in the cart which will be saved to the Klaviyo event
 		* @param WC_Product $product The product being added to the cart
+		* @param array      $values The full cart item data
 		*/
-		$event_data['$extra']['Items'][] = apply_filters( 'kl_checkout_item', $item, $product );
+		$event_data['$extra']['Items'][] = apply_filters( 'kl_checkout_item', $item, $product, $values );
 
 		$item_count              += $values['quantity'];
 		$all_categories           = array_values( array_unique( $all_categories ) );

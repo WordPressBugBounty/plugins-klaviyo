@@ -80,7 +80,7 @@ class WPKlaviyoAdmin {
 	 * @param string $hook The action slug so we can only enqueue for Klaviyo's settings page.
 	 */
 	public function enqueue_styles( $hook ) {
-		if ( strpos( $hook, 'page_klaviyo_settings' ) !== false ) {
+		if ( $hook && strpos( $hook, 'page_klaviyo_settings' ) !== false ) {
 			wp_enqueue_style( 'wck-admin-settings', KLAVIYO_URL . 'includes/admin/css/wck-admin.css', null, WCK_API::VERSION );
 		}
 	}
