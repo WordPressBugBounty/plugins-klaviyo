@@ -15,6 +15,7 @@
  */
 
 require __DIR__ . '/blocks/StoreApi.php';
+require_once __DIR__ . '/blocks/script-footer.php';
 
 new WCK\Blocks\StoreApi();
 
@@ -22,6 +23,7 @@ add_action(
 	'init',
 	function () {
 		register_block_type( __DIR__ . '/blocks/build' );
+		wck_move_checkout_block_scripts_to_footer();
 	}
 );
 

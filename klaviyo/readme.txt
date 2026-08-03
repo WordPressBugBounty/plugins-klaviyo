@@ -3,7 +3,7 @@ Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
 Requires at least: 5.2
 Tested up to: 7.0
-Stable tag: 3.8.0
+Stable tag: 3.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,10 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.8.1 2026-07-31 =
+* Fixed - Register WooCommerce checkout block scripts in the footer to silence WooCommerce dependency console warnings on block checkout pages.
+* Security - WooCommerce API credentials are now sent via a request header instead of the URL. Older plugin versions calling into this endpoint continue to work via the previous method.
+
 = 3.8.0 2026-05-27 =
 * Added - Enables WhatsApp consent at checkout.
 * Fixed - Debounce klaviyo.identify() in WooCommerce Blocks checkout to prevent duplicate profiles when typing email addresses.

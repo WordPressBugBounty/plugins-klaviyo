@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCK_API {
 
-	const VERSION                    = '3.8.0';
+	const VERSION                    = '3.8.1';
 	const KLAVIYO_BASE_URL           = 'klaviyo/v1';
 	const ORDERS_ENDPOINT            = 'orders';
 	const EXTENSION_VERSION_ENDPOINT = 'version';
@@ -45,6 +45,11 @@ class WCK_API {
 
 	const ERROR_KEYS_NOT_PASSED        = 'consumer key or consumer secret not passed';
 	const ERROR_CONSUMER_KEY_NOT_FOUND = 'consumer_key not found';
+
+	// Preferred credential transport for v2 auth; query/body params are kept as a fallback
+	// so stores running older plugin versions that don't read these headers still work.
+	const HEADER_CONSUMER_KEY    = 'X-Klaviyo-Consumer-Key';
+	const HEADER_CONSUMER_SECRET = 'X-Klaviyo-Consumer-Secret';
 
 	const PERMISSION_READ       = 'read';
 	const PERMISSION_WRITE      = 'write';
@@ -174,8 +179,14 @@ function kl_validate_request( $request ) {
  * @return bool|WP_Error True if validation succeeds, otherwise WP_Error to be handled by rest server.
  */
 function kl_validate_request_v2( WP_REST_Request $request ) {
-	$consumer_key    = $request->get_param( 'consumer_key' );
-	$consumer_secret = $request->get_param( 'consumer_secret' );
+	// Preferred: credentials sent via header so they don't end up in raw access logs.
+	$consumer_key    = $request->get_header( WCK_API::HEADER_CONSUMER_KEY );
+	$consumer_secret = $request->get_header( WCK_API::HEADER_CONSUMER_SECRET );
+	if ( empty( $consumer_key ) || empty( $consumer_secret ) ) {
+		// Fallback for callers/plugin versions that still send credentials via query string or body.
+		$consumer_key    = $request->get_param( 'consumer_key' );
+		$consumer_secret = $request->get_param( 'consumer_secret' );
+	}
 	if ( empty( $consumer_key ) || empty( $consumer_secret ) ) {
 		return new WP_Error(
 			'klaviyo_missing_key_secret',
