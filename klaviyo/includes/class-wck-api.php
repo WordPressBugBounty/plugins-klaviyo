@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCK_API {
 
-	const VERSION                    = '3.8.1';
+	const VERSION                    = '3.8.2';
 	const KLAVIYO_BASE_URL           = 'klaviyo/v1';
 	const ORDERS_ENDPOINT            = 'orders';
 	const EXTENSION_VERSION_ENDPOINT = 'version';
@@ -131,8 +131,14 @@ function kl_count_loop( WP_Query $loop ) {
  * @return array
  */
 function kl_validate_request( $request ) {
-	$consumer_key    = $request->get_param( 'consumer_key' );
-	$consumer_secret = $request->get_param( 'consumer_secret' );
+	// Preferred: credentials sent via header so they don't end up in raw access logs.
+	$consumer_key    = $request->get_header( WCK_API::HEADER_CONSUMER_KEY );
+	$consumer_secret = $request->get_header( WCK_API::HEADER_CONSUMER_SECRET );
+	if ( empty( $consumer_key ) || empty( $consumer_secret ) ) {
+		// Fallback for callers/plugin versions that still send credentials via query string or body.
+		$consumer_key    = $request->get_param( 'consumer_key' );
+		$consumer_secret = $request->get_param( 'consumer_secret' );
+	}
 	if ( empty( $consumer_key ) || empty( $consumer_secret ) ) {
 		return kl_validation_response(
 			true,
