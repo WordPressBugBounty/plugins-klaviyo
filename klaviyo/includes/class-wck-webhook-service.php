@@ -25,6 +25,8 @@ class WCK_Webhook_Service {
 	const TOPIC_EVENT_OPTIONS   = 'options';
 	const TOPIC_EVENT_REMOVE    = 'remove';
 	const TOPIC_EVENT_VERSION   = 'version';
+	const SIGNATURE_HEADER      = 'X-WC-Webhook-Signature';
+	const MAX_WEBHOOKS_TO_SCAN  = 10000;
 
 	/**
 	 * Handle building args, sending request to Klaviyo's webhook url and lightweight error handling.
@@ -41,16 +43,23 @@ class WCK_Webhook_Service {
 		}
 		$url = self::WEBHOOK_URL . $options['klaviyo_public_api_key'];
 
+		$body_json = wp_json_encode( $data );
+		$headers   = array(
+			'X-WC-Webhook-Topic' => self::TOPIC_RESOURCE_CUSTOM . '/' . $topic_event,
+			'Content-Type'       => 'application/json',
+		);
+		$signature = $this->sign_payload( $body_json );
+		if ( null !== $signature ) {
+			$headers[ self::SIGNATURE_HEADER ] = $signature;
+		}
+
 		// Don't set 'blocking' = false, it short circuits response parsing and returns an empty Requests_Response
 		// object. For more information see Requests::parse_response() in wordpress/wp-includes/class-requests.php.
 		$response = wp_remote_post(
 			$url,
 			array(
-				'headers' => array(
-					'X-WC-Webhook-Topic' => self::TOPIC_RESOURCE_CUSTOM . '/' . $topic_event,
-					'Content-Type'       => 'application/json',
-				),
-				'body'    => wp_json_encode( $data ),
+				'headers' => $headers,
+				'body'    => $body_json,
 			)
 		);
 
@@ -84,5 +93,87 @@ class WCK_Webhook_Service {
 		}
 
 		return $this->send_webhook( self::TOPIC_EVENT_OPTIONS, $data );
+	}
+
+	/**
+	 * Signs a payload the same way WooCommerce signs its own webhooks.
+	 * Public so wck-cart-functions.php can use it too.
+	 *
+	 * @param string $body_json The JSON request body.
+	 * @return string|null Null if no secret is available yet.
+	 */
+	public function sign_payload( $body_json ) {
+		$secret = $this->get_signing_secret();
+		if ( ! $secret ) {
+			return null;
+		}
+
+		// WooCommerce decodes HTML entities in the secret before signing. Do the same, or signatures do not match.
+		return base64_encode( hash_hmac( 'sha256', $body_json, wp_specialchars_decode( $secret, ENT_QUOTES ), true ) );
+	}
+
+	/**
+	 * Returns null if the lookup throws, so checkout is not affected.
+	 *
+	 * @return string|null
+	 */
+	protected function get_signing_secret() {
+		try {
+			return $this->scan_registered_webhooks_for_secret();
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+	}
+
+	/**
+	 * Loops over core webhooks to find the secret there to use for the custom webhooks.
+	 *
+	 * @return string|null
+	 */
+	protected function scan_registered_webhooks_for_secret() {
+		if ( ! class_exists( 'WC_Data_Store' ) ) {
+			return null;
+		}
+
+		$webhook_data_store = WC_Data_Store::load( 'webhook' );
+		return $this->find_secret_in_webhook_ids( $webhook_data_store->get_webhooks_ids() );
+	}
+
+	/**
+	 * Stops after MAX_WEBHOOKS_TO_SCAN webhooks, so a store with a huge number
+	 * of webhooks cannot turn this into a slow scan on every checkout.
+	 *
+	 * @param int[] $webhook_ids
+	 * @return string|null
+	 */
+	protected function find_secret_in_webhook_ids( $webhook_ids ) {
+		foreach ( array_slice( $webhook_ids, 0, self::MAX_WEBHOOKS_TO_SCAN ) as $webhook_id ) {
+			$webhook = wc_get_webhook( $webhook_id );
+			if ( $webhook && $this->is_klaviyo_webhook_url( $webhook->get_delivery_url() ) ) {
+				return $webhook->get_secret();
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Checks the host and path of a webhook's delivery_url.
+	 *
+	 * @param string $delivery_url
+	 * @return bool
+	 */
+	protected function is_klaviyo_webhook_url( $delivery_url ) {
+		$host = wp_parse_url( $delivery_url, PHP_URL_HOST );
+		$path = wp_parse_url( $delivery_url, PHP_URL_PATH );
+
+		if ( ! $host || ! $path ) {
+			return false;
+		}
+
+		$is_klaviyo_host             = 'klaviyo.com' === $host || '.klaviyo.com' === substr( $host, -12 );
+		$is_woocommerce_webhook_path = false !== strpos( $path, '/api/webhook/integration/woocommerce' );
+
+		return $is_klaviyo_host && $is_woocommerce_webhook_path;
 	}
 }

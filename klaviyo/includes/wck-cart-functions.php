@@ -345,17 +345,24 @@ function kl_add_to_list() {
 		return;
 	}
 
+	$body_json = wp_json_encode( $body );
+	$headers   = array(
+		'X-WC-Webhook-Topic' => 'custom/consent',
+		'Content-Type'       => 'application/json',
+	);
+	$signature = ( new WCK_Webhook_Service() )->sign_payload( $body_json );
+	if ( null !== $signature ) {
+		$headers['X-WC-Webhook-Signature'] = $signature;
+	}
+
 	wp_remote_post(
 		$url,
 		array(
 			'method'      => 'POST',
 			'httpversion' => '1.0',
 			'blocking'    => false,
-			'headers'     => array(
-				'X-WC-Webhook-Topic' => 'custom/consent',
-				'Content-Type'       => 'application/json',
-			),
-			'body'        => json_encode( $body ),
+			'headers'     => $headers,
+			'body'        => $body_json,
 			'data_format' => 'body',
 		)
 	);

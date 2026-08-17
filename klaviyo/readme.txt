@@ -3,7 +3,7 @@ Contributors: klaviyo, bialecki, bawhalley
 Tags: analytics, email, marketing, klaviyo, woocommerce
 Requires at least: 5.2
 Tested up to: 7.0
-Stable tag: 3.8.2
+Stable tag: 3.8.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,9 @@ For detailed instructions on integrating Klaviyo and WooCommerce please visit ou
 
 
 == Changelog ==
+= 3.8.3 2026-08-17 =
+* Security - Sign outgoing custom/* webhooks (options, remove, consent) with an HMAC signature, matching WooCommerce's native webhook signing scheme.
+
 = 3.8.2 2026-08-03 =
 * Security - The legacy WooCommerce API validator used by the products endpoints now also accepts credentials via header, matching the fix already applied to the other authenticated endpoints.
 
